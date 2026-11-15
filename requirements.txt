@@ -1,1 +1,4 @@
+Plaintext
 
+requests
+beautifulsoup4
