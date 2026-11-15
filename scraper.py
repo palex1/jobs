@@ -1,11 +1,11 @@
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
-import json
 
 DB_NAME = "jobs.db"
 HTML_FILE = "index.html"
 
+# Τα δύο sites που παρακολουθούμε
 TARGETS = [
     {
         "name": "Καλημέρα Αρκαδία",
@@ -41,8 +41,7 @@ def scrape_jobs():
     total_added = 0
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept-Language": "el-GR,el;q=0.9,en;q=0.8"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
 
     for target in TARGETS:
@@ -51,23 +50,21 @@ def scrape_jobs():
         domain = target["domain"]
 
         try:
-            print(f"Σάρωση του: {target_url}")
-            response = requests.get(target_url, headers=headers, timeout=15)
+            response = requests.get(target_url, headers=headers, timeout=10)
             if response.status_code != 200:
-                print(f"Σφάλμα σύνδεσης: {response.status_code}")
                 continue
             
             soup = BeautifulSoup(response.text, "html.parser")
             
-            # Μαζεύουμε ΟΛΟΥΣ τους συνδέσμους που έχουν κάποιο αξιόλογο μήκος κειμένου
-            links = soup.find_all('a')
+            # Σαρώνουμε επικεφαλίδες (όπως κάναμε στον παλιό κώδικα που δούλευε)
+            items = soup.find_all(['h2', 'h3'])
             
-            for a_tag in links:
-                href = a_tag.get('href')
-                title = a_tag.get_text(strip=True)
-                
-                # Φιλτράρουμε μόνο συνδέσμους που μοιάζουν με τίτλους άρθρων/προκηρύξεων
-                if href and title and len(title) > 15:
+            for item in items:
+                a_tag = item.find('a')
+                if a_tag and a_tag.get('href'):
+                    title = a_tag.get_text(strip=True)
+                    href = a_tag['href']
+                    
                     if href.startswith('/'):
                         link = f"https://{domain}" + href
                     elif href.startswith('http'):
@@ -75,8 +72,7 @@ def scrape_jobs():
                     else:
                         continue
                     
-                    # Αν ανήκει στο domain και δεν είναι το ίδιο το αρχικό URL
-                    if domain in link and link != target_url:
+                    if len(title) > 10:
                         try:
                             cursor.execute(
                                 "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
@@ -87,147 +83,69 @@ def scrape_jobs():
                         except sqlite3.IntegrityError:
                             pass
         except Exception as e:
-            print(f"Σφάλμα στο {target_url}: {e}")
+            print(f"Σφάλμα: {e}")
 
     conn.close()
-    print(f"Συνολικά προστέθηκαν {total_added} νέες αγγελίες.")
+    print(f"Προστέθηκαν {total_added} νέες αγγελίες.")
 
 def generate_html():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, title, link, source, date_added FROM jobs ORDER BY id DESC")
+    cursor.execute("SELECT title, link, source, date_added FROM jobs ORDER BY id DESC")
     rows = cursor.fetchall()
     conn.close()
-
-    js_jobs = []
-    for r in rows:
-        job_id, title, link, source, date = r
-        js_jobs.append({
-            "id": job_id,
-            "title": title,
-            "link": link,
-            "source": source,
-            "date": date
-        })
-
-    jobs_json = json.dumps(js_jobs, ensure_ascii=False)
 
     html_content = f"""<!DOCTYPE html>
 <html lang="el">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Έξυπνο Dashboard Αγγελιών</title>
+    <title>Θέσεις Εργασίας - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-slate-50 min-h-screen py-8 px-4" x-data="jobApp({{jobs: {jobs_json}}})">
+<body class="bg-slate-50 min-h-screen py-10 px-4">
     <div class="max-w-4xl mx-auto">
-        
-        <!-- HEADER -->
-        <header class="mb-6 text-center">
-            <h1 class="text-3xl font-extrabold text-slate-800">💼 Dashboard Αγγελιών & Προκηρύξεων</h1>
-            <p class="text-slate-500 mt-1">Αυτόματη παρακολούθηση & έξυπνη αποθήκευση</p>
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-extrabold text-slate-800">💼 Αγγελίες Εργασίας & Προκηρύξεις</h1>
+            <p class="text-slate-500 mt-2">Αυτόματη συγκέντρωση για την περιοχή μας</p>
         </header>
 
-        <!-- SEARCH & TABS -->
-        <div class="bg-white p-4 rounded-xl shadow-md mb-6 border border-slate-100 space-y-4">
-            <div class="relative">
-                <input type="text" x-model="search" placeholder="🔍 Αναζήτηση με λέξη-κλειδί (π.χ. Πληροφορική, ΣΟΧ, Δήμος)..." 
-                    class="w-full px-4 py-3 pl-12 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                <span class="absolute left-4 top-3.5 text-slate-400">⚡</span>
-            </div>
-
-            <div class="flex flex-wrap gap-2 justify-between items-center pt-2 border-t border-slate-100">
-                <div class="flex flex-wrap gap-2">
-                    <button @click="currentTab = 'all'" :class="currentTab === 'all' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                        Όλες (<span x-text="jobs.length"></span>)
-                    </button>
-                    <button @click="currentTab = 'saved'" :class="currentTab === 'saved' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                        ⭐ Αγαπημένες (<span x-text="savedIds.length"></span>)
-                    </button>
-                    <button @click="currentTab = 'ppel'" :class="currentTab === 'ppel' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                        Περιφέρεια Πελοποννήσου
-                    </button>
-                    <button @click="currentTab = 'kalimera'" :class="currentTab === 'kalimera' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                        Καλημέρα Αρκαδία
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- LIST OF JOBS -->
         <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-slate-100">
-            <div class="divide-y divide-slate-100" x-show="filteredJobs.length > 0">
-                <template x-for="job in filteredJobs" :key="job.id">
-                    <div class="p-5 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full" 
-                                    :class="job.source.includes('Περιφέρεια') ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800'" 
-                                    x-text="job.source"></span>
-                                <span class="text-xs text-slate-400" x-text="'Καταγράφηκε: ' + job.date"></span>
-                            </div>
-                            <h2 class="text-base font-semibold text-slate-800" x-text="job.title"></h2>
-                        </div>
-                        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                            <button @click="toggleSave(job.id)" class="p-2 rounded-lg border transition text-sm"
-                                :class="savedIds.includes(job.id) ? 'bg-amber-50 border-amber-300 text-amber-500' : 'bg-white border-slate-200 text-slate-400 hover:text-amber-500'"
-                                :title="savedIds.includes(job.id) ? 'Αφαίρεση από αγαπημένα' : 'Αποθήκευση στα αγαπημένα'">
-                                <span x-text="savedIds.includes(job.id) ? '⭐' : '☆'"></span>
-                            </button>
-                            <a :href="job.link" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                                Άνοιγμα →
-                            </a>
-                        </div>
-                    </div>
-                </template>
+            <div class="p-4 bg-slate-100 border-b border-slate-200 font-semibold text-slate-700 flex justify-between items-center">
+                <span>Συνολικά αποθηκευμένες αγγελίες</span>
+                <span class="bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full">{len(rows)}</span>
             </div>
+            <div class="divide-y divide-slate-100">
+"""
 
-            <!-- EMPTY STATE -->
-            <div class="p-12 text-center text-slate-400" x-show="filteredJobs.length === 0">
-                Δεν βρέθηκαν αγγελίες.
+    if not rows:
+        html_content += """
+                <div class="p-8 text-center text-slate-400">
+                    Δεν βρέθηκαν αγγελίες ακόμα. Το σύστημα θα σαρώσει σύντομα!
+                </div>
+        """
+    else:
+        for title, link, source, date in rows:
+            badge_color = "bg-emerald-100 text-emerald-800" if "Περιφέρεια" in source else "bg-sky-100 text-sky-800"
+            html_content += f"""
+                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full {badge_color}">{source}</span>
+                            <span class="text-xs text-slate-400">Καταγράφηκε: {date}</span>
+                        </div>
+                        <h2 class="text-lg font-semibold text-slate-800">{title}</h2>
+                    </div>
+                    <a href="{link}" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
+                        Άνοιγμα Αγγελίας →
+                    </a>
+                </div>
+"""
+
+    html_content += """
             </div>
         </div>
-
     </div>
-
-    <script>
-        function jobApp(data) {{
-            return {{
-                jobs: data.jobs,
-                search: '',
-                currentTab: 'all',
-                savedIds: JSON.parse(localStorage.getItem('saved_job_ids') || '[]'),
-
-                toggleSave(id) {{
-                    if (this.savedIds.includes(id)) {{
-                        this.savedIds = this.savedIds.filter(i => i !== id);
-                    }} else {{
-                        this.savedIds.push(id);
-                    }}
-                    localStorage.setItem('saved_job_ids', JSON.stringify(this.savedIds));
-                }},
-
-                get filteredJobs() {{
-                    return this.jobs.filter(job => {{
-                        let matchesSearch = job.title.toLowerCase().includes(this.search.toLowerCase());
-                        
-                        let matchesTab = true;
-                        if (this.currentTab === 'saved') {{
-                            matchesTab = this.savedIds.includes(job.id);
-                        }} else if (this.currentTab === 'ppel') {{
-                            matchesTab = job.source.includes('Περιφέρεια');
-                        }} else if (this.currentTab === 'kalimera') {{
-                            matchesTab = job.source.includes('Καλημέρα');
-                        }}
-
-                        return matchesSearch && matchesTab;
-                    }});
-                }}
-            }}
-        }}
-    </script>
 </body>
 </html>
 """
