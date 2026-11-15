@@ -1,7 +1,6 @@
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
-import os
 
 DB_NAME = "jobs.db"
 HTML_FILE = "index.html"
@@ -23,8 +22,7 @@ def init_db():
 def scrape_jobs():
     init_db()
     
-    # Η σελίδα αγγελιών εργασίας από το ArcadiaPortal
-    target_url = "https://www.arcadiaportal.gr/category/%CE%B1%CE%B3%CE%B3%CE%B5%CE%BB%CE%AF%CE%B5%CF%82/%CE%B1%CE%B3%CE%B3%CE%B5%CE%BB%CE%AF%CE%B5%CF%82/%CE%B5%CF%81%CE%B3%CE%B1%CF%83%CE%AF%CE%B1"
+    target_url = "https://www.arcadiaportal.gr/category/%CE%B1%CE%B3%CE%B3%CE%B5%CE%BB%CE%AF%CE%B5%CF%83/%CE%B1%CE%B3%CE%B3%CE%B5%CE%BB%CE%AF%CE%B5%CF%83/%CE%B5%CF%81%CE%B3%CE%B1%CF%83%CE%AF%CE%B1"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
@@ -39,7 +37,7 @@ def scrape_jobs():
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
 
-        # Εντοπισμός τίτλων και συνδέσμων αγγελιών
+        # Αναζήτηση τίτλων σε h2 και h3
         items = soup.find_all(['h2', 'h3'])
         
         count = 0
@@ -52,8 +50,8 @@ def scrape_jobs():
                 if link.startswith('/'):
                     link = "https://www.arcadiaportal.gr" + link
                 
-                # Φιλτράρισμα για να κρατάμε σχετικές εγγραφές
-                if len(title) > 5 and ("/ads/" in link or "ergasia" in link or "ζητείται" in title.lower() or "εργασία" in title.lower()):
+                # Αφού βρισκόμαστε ήδη στη σελίδα κατηγορίας εργασίας, αποθηκεύουμε τους τίτλους
+                if len(title) > 10:
                     try:
                         cursor.execute("INSERT INTO jobs (title, link) VALUES (?, ?)", (title, link))
                         conn.commit()
