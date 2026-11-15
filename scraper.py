@@ -22,7 +22,7 @@ def init_db():
 def scrape_jobs():
     init_db()
     
-    target_url = "https://www.arcadiaportal.gr/category/%CE%B1%CE%B3%CE%B3%CE%B5%CE%BB%CE%AF%CE%B5%CF%83/%CE%B1%CE%B3%CE%B3%CE%B5%CE%BB%CE%AF%CE%B5%CF%83/%CE%B5%CF%81%CE%B3%CE%B1%CF%83%CE%AF%CE%B1"
+    target_url = "https://www.kalimera-arkadia.gr/theseis-ergasias.html"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
