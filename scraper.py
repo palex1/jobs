@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 DB_NAME = "jobs.db"
 HTML_FILE = "index.html"
 
-# Τα δύο sites που παρακολουθούμε
 TARGETS = [
     {
         "name": "Καλημέρα Αρκαδία",
@@ -17,6 +16,15 @@ TARGETS = [
         "url": "https://www.ppel.gov.gr/category/diakyrixeis-prokyrixeis/",
         "domain": "ppel.gov.gr"
     }
+]
+
+# Απαραίτητες λέξεις-κλειδιά: Ο τίτλος ΠΡΕΠΕΙ να περιέχει έστω και μία από αυτές για να θεωρηθεί αγγελία/προκήρυξη
+JOB_KEYWORDS = [
+    "εργασια", "εργασία", "θεσεισ", "θέσεις", "θεση", "θέση", 
+    "προσληψη", "πρόσληψη", "προσληψεις", "προσλήψεις", 
+    "προκηρυξη", "προκήρυξη", "προκηρυξεις", "προκηρύξεις", 
+    "διαγωνισμ", "συμβασ", "σοχ", "ασεπ", "προσωπικ", 
+    "υπαλληλ", "εργο", "έργο", "μιθωσ", "μίσθωσ"
 ]
 
 def init_db():
@@ -55,8 +63,6 @@ def scrape_jobs():
                 continue
             
             soup = BeautifulSoup(response.text, "html.parser")
-            
-            # Σαρώνουμε επικεφαλίδες (όπως κάναμε στον παλιό κώδικα που δούλευε)
             items = soup.find_all(['h2', 'h3'])
             
             for item in items:
@@ -72,21 +78,29 @@ def scrape_jobs():
                     else:
                         continue
                     
+                    # Έλεγχος: Ο τίτλος πρέπει να έχει τουλάχιστον 10 γράμματα
                     if len(title) > 10:
-                        try:
-                            cursor.execute(
-                                "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
-                                (title, link, source_name)
-                            )
-                            conn.commit()
-                            total_added += 1
-                        except sqlite3.IntegrityError:
-                            pass
+                        # Μετατροπή σε πεζά για σωστό έλεγχο λέξεων-κλειδιών
+                        title_lower = title.lower()
+                        
+                        # Αν είναι από την Περιφέρεια (σελίδα προκηρύξεων) ή αν περιέχει λέξη-κλειδί εργασίας
+                        is_relevant = any(kw in title_lower for kw in JOB_KEYWORDS) or "ppel.gov.gr" in link
+                        
+                        if is_relevant:
+                            try:
+                                cursor.execute(
+                                    "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
+                                    (title, link, source_name)
+                                )
+                                conn.commit()
+                                total_added += 1
+                            except sqlite3.IntegrityError:
+                                pass
         except Exception as e:
             print(f"Σφάλμα: {e}")
 
     conn.close()
-    print(f"Προστέθηκαν {total_added} νέες αγγελίες.")
+    print(f"Προστέθηκαν {total_added} σχετικές αγγελίες.")
 
 def generate_html():
     conn = sqlite3.connect(DB_NAME)
@@ -107,12 +121,12 @@ def generate_html():
     <div class="max-w-4xl mx-auto">
         <header class="mb-8 text-center">
             <h1 class="text-3xl font-extrabold text-slate-800">💼 Αγγελίες Εργασίας & Προκηρύξεις</h1>
-            <p class="text-slate-500 mt-2">Αυτόματη συγκέντρωση για την περιοχή μας</p>
+            <p class="text-slate-500 mt-2">Φιλτραρισμένες αγγελίες για την περιοχή μας</p>
         </header>
 
         <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-slate-100">
             <div class="p-4 bg-slate-100 border-b border-slate-200 font-semibold text-slate-700 flex justify-between items-center">
-                <span>Συνολικά αποθηκευμένες αγγελίες</span>
+                <span>Συνολικά φιλτραρισμένες αγγελίες</span>
                 <span class="bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full">{len(rows)}</span>
             </div>
             <div class="divide-y divide-slate-100">
@@ -121,7 +135,7 @@ def generate_html():
     if not rows:
         html_content += """
                 <div class="p-8 text-center text-slate-400">
-                    Δεν βρέθηκαν αγγελίες ακόμα. Το σύστημα θα σαρώσει σύντομα!
+                    Δεν βρέθηκαν αγγελίες με τα τρέχοντα φίλτρα.
                 </div>
         """
     else:
