@@ -19,12 +19,14 @@ TARGETS = [
     }
 ]
 
+# Απαγορευμένες λέξεις (κόβει ατυχήματα, ειδήσεις, αγγελίες ακινήτων κλπ.)
 BLACKLIST = [
     "τροχαίο", "τροχαιο", "νεκρός", "νεκρος", "πωλείται", "πωλειται", 
     "ενοικιάζεται", "ενοικιαζεται", "διαμέρισμα", "διαμερισμα", "οικία", 
     "εκκλησία", "εορτή", "εορτη", "συλλυπητήρια", "συνάντηση"
 ]
 
+# ΥΠΟΧΡΕΩΤΙΚΕΣ λέξεις: Πρέπει ΟΠΩΣΔΗΠΟΤΕ ο τίτλος να περιέχει έστω και μία από αυτές
 MANDATORY_KEYWORDS = [
     "εργασία", "εργασια", "θέση", "θεσεισ", "θέσεις", "θεση", 
     "πρόσληψη", "προσληψη", "προσλήψεις", "προσληψεις", 
@@ -87,8 +89,12 @@ def scrape_jobs():
                     
                     if len(title) > 10:
                         title_lower = title.lower()
+                        
+                        # 1. Έλεγχος Blacklist
                         if any(bad in title_lower for bad in BLACKLIST):
                             continue
+                        
+                        # 2. Έλεγχος Mandatory Keywords (υποχρεωτικά)
                         if not any(kw in title_lower for kw in MANDATORY_KEYWORDS):
                             continue
                         
@@ -264,7 +270,7 @@ def generate_html():
 
     with open(HTML_FILE, "w", encoding="utf-8") as f:
         f.write(html_content)
-    print("Το index.html αναβαθμίστηκε επιτυχώς!")
+    print("Το index.html δημιουργήθηκε επιτυχώς!")
 
 if __name__ == "__main__":
     scrape_jobs()
