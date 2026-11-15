@@ -1,7 +1,7 @@
-
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
+import json
 
 DB_NAME = "jobs.db"
 HTML_FILE = "index.html"
@@ -19,10 +19,12 @@ TARGETS = [
     }
 ]
 
+# Χαλαρότερα και πιο περιεκτικά keywords για να μη χάνουμε τίποτα σχετικό
 KEYWORDS = [
     "συμβασης", "μισθωσης", "εργου", "προκηρυξης", "προκηρυξη", 
     "πινακες", "καταταξης", "ασεπ", "προσληψη", "πληροφορικη", 
-    "πληροφορικής", "εργασια", "εργασία", "σοχ"
+    "πληροφορικής", "εργασια", "εργασία", "σοχ", "προκήρυξη", 
+    "θέση", "θέσεις", "προκηρύξεις", "πρόσληψη"
 ]
 
 def init_db():
@@ -56,18 +58,30 @@ def scrape_jobs():
         domain = target["domain"]
 
         try:
-            response = requests.get(target_url, headers=headers, timeout=10)
+            print(f"Σάρωση του: {target_url}")
+            response = requests.get(target_url, headers=headers, timeout=15)
             if response.status_code != 200:
+                print(f"Σφάλμα σύνδεσης: {response.status_code}")
                 continue
             
             soup = BeautifulSoup(response.text, "html.parser")
-            links = soup.find_all('a')
             
-            for a_tag in links:
+            # Σαρώνουμε κυρίως επικεφαλίδες (h2, h3, h4) που περιέχουν συνδέσμους (άρθρα/προκηρύξεις)
+            items = soup.find_all(['h2', 'h3', 'h4'])
+            
+            for item in items:
+                a_tag = item.find('a')
+                if not a_tag:
+                    # Αν η ίδια η επικεφαλίδα είναι σύνδεσμος
+                    if item.name == 'a':
+                        a_tag = item
+                    else:
+                        continue
+                
                 href = a_tag.get('href')
                 title = a_tag.get_text(strip=True)
                 
-                if href and title and len(title) > 10:
+                if href and title and len(title) > 8:
                     if href.startswith('/'):
                         link = f"https://{domain}" + href
                     elif href.startswith('http'):
@@ -75,20 +89,20 @@ def scrape_jobs():
                     else:
                         continue
                     
-                    if domain in link and link != target_url:
-                        title_lower = title.lower()
-                        matched = any(kw in title_lower for kw in KEYWORDS)
-                        
-                        if matched:
-                            try:
-                                cursor.execute(
-                                    "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
-                                    (title, link, source_name)
-                                )
-                                conn.commit()
-                                total_added += 1
-                            except sqlite3.IntegrityError:
-                                pass
+                    title_lower = title.lower()
+                    # Έλεγχος αν ταιριάζει με λέξη-κλειδί ή αν η σελίδα είναι εξ' ολοκλήρου αγγελιών
+                    matched = any(kw in title_lower for kw in KEYWORDS) or "theseis-ergasias" in target_url
+                    
+                    if matched:
+                        try:
+                            cursor.execute(
+                                "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
+                                (title, link, source_name)
+                            )
+                            conn.commit()
+                            total_added += 1
+                        except sqlite3.IntegrityError:
+                            pass
         except Exception as e:
             print(f"Σφάλμα στο {target_url}: {e}")
 
@@ -102,7 +116,6 @@ def generate_html():
     rows = cursor.fetchall()
     conn.close()
 
-    # Μετατροπή δεδομένων σε JavaScript array για έξυπνο filtering στον browser
     js_jobs = []
     for r in rows:
         job_id, title, link, source, date = r
@@ -114,7 +127,6 @@ def generate_html():
             "date": date
         })
 
-    import json
     jobs_json = json.dumps(js_jobs, ensure_ascii=False)
 
     html_content = f"""<!DOCTYPE html>
@@ -239,7 +251,7 @@ def generate_html():
 
     with open(HTML_FILE, "w", encoding="utf-8") as f:
         f.write(html_content)
-    print("Το index.html δημιουργήθηκε επιτυχώς με το νέο UI!")
+    print("Το index.html δημιουργήθηκε επιτυχώς!")
 
 if __name__ == "__main__":
     scrape_jobs()
