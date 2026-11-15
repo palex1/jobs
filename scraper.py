@@ -19,14 +19,6 @@ TARGETS = [
     }
 ]
 
-# Χαλαρότερα και πιο περιεκτικά keywords για να μη χάνουμε τίποτα σχετικό
-KEYWORDS = [
-    "συμβασης", "μισθωσης", "εργου", "προκηρυξης", "προκηρυξη", 
-    "πινακες", "καταταξης", "ασεπ", "προσληψη", "πληροφορικη", 
-    "πληροφορικής", "εργασια", "εργασία", "σοχ", "προκήρυξη", 
-    "θέση", "θέσεις", "προκηρύξεις", "πρόσληψη"
-]
-
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -49,7 +41,8 @@ def scrape_jobs():
     total_added = 0
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept-Language": "el-GR,el;q=0.9,en;q=0.8"
     }
 
     for target in TARGETS:
@@ -66,22 +59,15 @@ def scrape_jobs():
             
             soup = BeautifulSoup(response.text, "html.parser")
             
-            # Σαρώνουμε κυρίως επικεφαλίδες (h2, h3, h4) που περιέχουν συνδέσμους (άρθρα/προκηρύξεις)
-            items = soup.find_all(['h2', 'h3', 'h4'])
+            # Μαζεύουμε ΟΛΟΥΣ τους συνδέσμους που έχουν κάποιο αξιόλογο μήκος κειμένου
+            links = soup.find_all('a')
             
-            for item in items:
-                a_tag = item.find('a')
-                if not a_tag:
-                    # Αν η ίδια η επικεφαλίδα είναι σύνδεσμος
-                    if item.name == 'a':
-                        a_tag = item
-                    else:
-                        continue
-                
+            for a_tag in links:
                 href = a_tag.get('href')
                 title = a_tag.get_text(strip=True)
                 
-                if href and title and len(title) > 8:
+                # Φιλτράρουμε μόνο συνδέσμους που μοιάζουν με τίτλους άρθρων/προκηρύξεων
+                if href and title and len(title) > 15:
                     if href.startswith('/'):
                         link = f"https://{domain}" + href
                     elif href.startswith('http'):
@@ -89,11 +75,8 @@ def scrape_jobs():
                     else:
                         continue
                     
-                    title_lower = title.lower()
-                    # Έλεγχος αν ταιριάζει με λέξη-κλειδί ή αν η σελίδα είναι εξ' ολοκλήρου αγγελιών
-                    matched = any(kw in title_lower for kw in KEYWORDS) or "theseis-ergasias" in target_url
-                    
-                    if matched:
+                    # Αν ανήκει στο domain και δεν είναι το ίδιο το αρχικό URL
+                    if domain in link and link != target_url:
                         try:
                             cursor.execute(
                                 "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
@@ -107,7 +90,7 @@ def scrape_jobs():
             print(f"Σφάλμα στο {target_url}: {e}")
 
     conn.close()
-    print(f"Συνολικά προστέθηκαν {total_added} νέες σχετικές αγγελίες.")
+    print(f"Συνολικά προστέθηκαν {total_added} νέες αγγελίες.")
 
 def generate_html():
     conn = sqlite3.connect(DB_NAME)
@@ -203,7 +186,7 @@ def generate_html():
 
             <!-- EMPTY STATE -->
             <div class="p-12 text-center text-slate-400" x-show="filteredJobs.length === 0">
-                Δεν βρέθηκαν αγγελίες που να ταιριάζουν με τα κριτήρια.
+                Δεν βρέθηκαν αγγελίες.
             </div>
         </div>
 
