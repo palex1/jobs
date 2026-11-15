@@ -1,3 +1,4 @@
+Python
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
@@ -170,4 +171,76 @@ def generate_html():
                                 <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full" 
                                     :class="job.source.includes('Περιφέρεια') ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800'" 
                                     x-text="job.source"></span>
-                                <span class="text-xs text-slate-400" x-text="'Καταγράφ
+                                <span class="text-xs text-slate-400" x-text="'Καταγράφηκε: ' + job.date"></span>
+                            </div>
+                            <h2 class="text-base font-semibold text-slate-800" x-text="job.title"></h2>
+                        </div>
+                        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                            <button @click="toggleSave(job.id)" class="p-2 rounded-lg border transition text-sm"
+                                :class="savedIds.includes(job.id) ? 'bg-amber-50 border-amber-300 text-amber-500' : 'bg-white border-slate-200 text-slate-400 hover:text-amber-500'"
+                                :title="savedIds.includes(job.id) ? 'Αφαίρεση από αγαπημένα' : 'Αποθήκευση στα αγαπημένα'">
+                                <span x-text="savedIds.includes(job.id) ? '⭐' : '☆'"></span>
+                            </button>
+                            <a :href="job.link" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
+                                Άνοιγμα →
+                            </a>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div class="p-12 text-center text-slate-400" x-show="filteredJobs.length === 0">
+                Δεν βρέθηκαν αγγελίες που να ταιριάζουν με τα κριτήρια.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function jobApp(data) {{
+            return {{
+                jobs: data.jobs,
+                search: '',
+                currentTab: 'all',
+                savedIds: JSON.parse(localStorage.getItem('saved_job_ids') || '[]'),
+
+                toggleSave(id) {{
+                    if (this.savedIds.includes(id)) {{
+                        this.savedIds = this.savedIds.filter(i => i !== id);
+                    }} else {{
+                        this.savedIds.push(id);
+                    }}
+                    localStorage.setItem('saved_job_ids', JSON.stringify(this.savedIds));
+                }},
+
+                get filteredJobs() {{
+                    return this.jobs.filter(job => {{
+                        let matchesSearch = job.title.toLowerCase().includes(this.search.toLowerCase());
+                        
+                        let matchesTab = true;
+                        if (this.currentTab === 'saved') {{
+                            matchesTab = this.savedIds.includes(job.id);
+                        }} else if (this.currentTab === 'ppel') {{
+                            matchesTab = job.source.includes('Περιφέρεια');
+                        }} else if (this.currentTab === 'kalimera') {{
+                            matchesTab = job.source.includes('Καλημέρα');
+                        }}
+
+                        return matchesSearch && matchesTab;
+                    }});
+                }}
+            }}
+        }}
+    </script>
+</body>
+</html>
+"""
+
+    with open(HTML_FILE, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    print("Το index.html δημιουργήθηκε επιτυχώς με το νέο UI!")
+
+if __name__ == "__main__":
+    scrape_jobs()
+    generate_html()
