@@ -48,7 +48,7 @@ def scrape_jobs():
                 link = a_tag['href']
                 
                 if link.startswith('/'):
-                    link = "https://www.arcadiaportal.gr" + link
+                    link = "https://www.kalimera-arkadia.gr" + link
                 
                 # Αφού βρισκόμαστε ήδη στη σελίδα κατηγορίας εργασίας, αποθηκεύουμε τους τίτλους
                 if len(title) > 10:
