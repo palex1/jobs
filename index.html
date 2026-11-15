@@ -3,272 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Θέσεις Εργασίας - Dashboard</title>
+    <title>Job Radar - Προσωπικό Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-slate-50 min-h-screen py-10 px-4">
+<body class="bg-slate-900 text-slate-100 min-h-screen py-6 px-4" x-data="jobApp({jobs: [{"id": 19, "title": "ΑΝΑΚΟΙΝΩΣΗ υπ’ αριθ. ΣΜΕ 12/2026 για τη σύναψη ΣΥΜΒΑΣΗΣ ΜΙΣΘΩΣΗΣ ΕΡΓΟΥ", "link": "https://www.ppel.gov.gr/anakinosi-ip-arith-sme-12-2026-gia-ti-sinapsi-simvasis-misthosis-ergou/", "source": "Περιφέρεια Πελοποννήσου", "date": "2026-11-15 18:29:23"}, {"id": 18, "title": "ΣΜΕ 8_2026 Προσωρινός Πίνακας κατάταξης και πίνακας απορριπτέων “POLLINATE- Βελτίωση των εδαφικών πολιτικών για την αντιμετώπιση της μείωσης των επικονιαστών/ Improving territorial policies to address the decline of pollinators”, του προγράμματος Interreg", "link": "https://www.ppel.gov.gr/sme-8_2026-prosorinos-pinakas-katataxis-ke-pinakas-aporripteon-pollinate-veltiosi-ton-edafikon-politikon-gia-tin-antimetopisi-tis-miosis-ton-epikoniaston-improving-territorial-policies-to-address/", "source": "Περιφέρεια Πελοποννήσου", "date": "2026-11-15 18:29:23"}, {"id": 17, "title": "ΣΜΕ 9_2026 Προσωρινός Πίνακας κατάταξης και Πίνακας απορριπτέων EUM POWER- Προώθηση της ισότητας των δικαιωμάτων μεταξύ των Εσωτερικών μεταναστών εντός Ε.Ε./ EU Migrants Promoting Openness With Equal Rights", "link": "https://www.ppel.gov.gr/sme-9_2026-prosorinos-pinakas-katataxis-ke-pinakas-aporripteon-eum-power-proothisi-tis-isotitas-ton-dikeomaton-metaxi-ton-esoterikon-metanaston-entos-e-e-eu-migrants-promoting-openness-with-equal-r/", "source": "Περιφέρεια Πελοποννήσου", "date": "2026-11-15 18:29:23"}, {"id": 16, "title": "Προκήρυξη Εξετάσεων για την απόκτηση Πτυχίου Ραδιοερασιτέχνη Β΄ Περιόδου 2026, στην περιοχή ευθύνης της Περιφερειακής Ενότητας Κορινθίας", "link": "https://www.ppel.gov.gr/prokirixi-exetaseon-gia-tin-apoktisi-ptichiou-radioerasitechni-v%ce%84-periodou-2026-stin-periochi-efthinis-tis-periferiakis-enotitas-korinthias/", "source": "Περιφέρεια Πελοποννήσου", "date": "2026-11-15 18:29:23"}, {"id": 15, "title": "Η Δ/νση Τεχνικών Έργων της Π.Ε. Μεσσηνίας προκηρύσσει ανοιχτό διαγωνισμό για την ανάθεση της σύμβασης έργου: «ΣΥΝΤΗΡΗΣΗ 7ης ΕΠ. ΟΔΟΥ, ΤΜΗΜΑ ΣΚΑΛΑ -ΜΕΛΙΓΑΛΑΣ» με προϋπολογισμό 1.200.000,00 ΕΥΡΩ (με ΦΠΑ)", "link": "https://www.ppel.gov.gr/i-d-nsi-technikon-ergon-tis-p-e-messinias-prokirissi-anichto-diagonismo-gia-tin-anathesi-tis-simvasis-ergou-sintirisi-7is-ep-odou-tmima-skala-meligalas-me-proipologismo-1-200-00000-e/", "source": "Περιφέρεια Πελοποννήσου", "date": "2026-11-15 18:29:23"}, {"id": 14, "title": "ΠΡΟΚΗΡΥΞΗ ΑΝΟΙΚΤΗΣ ΔΙΑΔΙΚΑΣΙΑΣ ΜΕΣΩ ΤΟΥ ΕΘΝΙΚΟΥ ΣΥΣΤΗΜΑΤΟΣ ΗΛΕΚΤΡΟΝΙΚΩΝ ΔΗΜΟΣΙΩΝ ΣΥΜΒΑΣΕΩΝ (Ε.Σ.Η.ΔΗ.Σ.) ΓΙΑ ΤΗΝ ΚΑΤΑΣΚΕΥΗ ΤΟΥ ΕΡΓΟΥ «ΣΥΝΤΗΡΗΣΗ, ΚΑΘΑΡΙΣΜΟΣ ΚΑΙ ΑΠΟΚΑΤΑΣΤΑΣΗ ΤΕΧΝΙΚΩΝ ΕΡΓΩΝ ΠΟΤΑΜΟΥ ΕΥΡΩΤΑ ΚΑΙ ΠΑΡΑΚΕΙΜΕΝΩΝ ΧΕΙΜΑΡΡΩΝ ΣΤΗΝ Π.Ε. ΛΑΚΩΝΙΑΣ»", "link": "https://www.ppel.gov.gr/prokirixi-aniktis-diadikasias-meso-tou-ethnikou-sistimatos-ilektronikon-dimosion-simvaseon-e-s-i-di-s-gia-tin-kataskevi-tou-ergou-sintirisi-katharismos-ke-apokatastasi-technikon-ergon-potamo/", "source": "Περιφέρεια Πελοποννήσου", "date": "2026-11-15 18:29:23"}, {"id": 13, "title": "Ανοικτή διαδικασία ηλεκτρονικής επιλογής αναδόχου κατασκευής του έργου: «ΑΠΟΚΑΤΑΣΤΑΣΗ ΖΗΜΙΩΝ ΚΑΙ ΑΝΤΙΠΛΗΜΜΥΡΙΚΗ ΘΩΡΑΚΙΣΗ ΡΕΜΑΤΩΝ ΚΑΙ ΤΕΧΝΙΚΩΝ ΕΡΓΩΝ ΤΟΥ ΔΗΜΟΥ ΤΡΙΦΥΛΙΑΣ ΑΠΟ ΤΗ ΘΕΟΜΗΝΙΑ ΤΗΣ 22.10.2025»", "link": "https://www.ppel.gov.gr/anikti-diadikasia-ilektronikis-epilogis-anadochou-kataskevis-tou-ergou-apokatastasi-zimion-ke-antiplimmiriki-thorakisi-rematon-ke-technikon-ergon-tou-dimou-trifilias-apo-ti-theominia-tis-22-10/", "source": "Περιφέρεια Πελοποννήσου", "date": "2026-11-15 18:29:23"}, {"id": 12, "title": "ΔΙΑΚΗΡΥΞΗ ΗΛΕΚΤΡΟΝΙΚΟΥ, ΔΙΕΘΝΟΥΣ, ΑΝΟΙΧΤΟΥ, ΔΙΑΓΩΝΙΣΜΟΥ ΥΠΟΕΡΓΟ 1 «Ολοκληρωμένο Πρόγραμμα Καταπολέμησης Κουνουπιών στη Περιφέρεια Πελοποννήσου, για τα έτη 2027-2028»", "link": "https://www.ppel.gov.gr/diakirixi-ilektronikou-diethnous-anichtou-diagonismou-ipoergo-1-olokliromeno-programma-katapolemisis-kounoupion-sti-periferia-peloponnisou-gia-ta-eti-2027-2028/", "source": "Περιφέρεια Πελοποννήσου", "date": "2026-11-15 18:29:23"}, {"id": 11, "title": "Μία πρόσληψη νοσηλευτή από τον Δήμο Τρίπολης για τη Στέγη Υποστηριζόμενης Διαβίωσης", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/192800-mia-proslipsi-nosilefti-apo-ton-dimo-tripolis-gia-ti-stegi-ypostirizomenis-diaviosis.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 10, "title": "1.000 προσλήψεις ΕΠΟΠ στις Ένοπλες Δυνάμεις", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/192845-1-000-proslipseis-epop-stis-enoples-dynameis.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 9, "title": "Δήμος Γορτυνίας - Σχολικές καθαρίστριες | Ο οριστικός πίνακας κατάταξης", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/193042-dimos-gortynias-sxolikes-katharistries-o-oristikos-pinakas-katataksis.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 8, "title": "Δήμος Τρίπολης | Πίνακας κατάταξης και βαθμολογίας για την προκήρυξη ΣΟΧ 1/2026", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/193427-dimos-tripolis-pinakas-katataksis-kai-vathmologias-gia-tin-prokiryksi-sox-1-2026.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 7, "title": "Δήμος Βόρειας Κυνουρίας | Πρόσληψη 5 ατόμων για παιδικούς σταθμούς και ΚΔΑΠ ΑμεΑ", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/193704-dimos-voreias-kynourias-proslipsi-5-atomon-gia-paidikoys-stathmoys-kai-kdap-amea.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 6, "title": "Νέα θέση εργασίας για υπαλλήλο μπουφέ στα ΣΕΑ Νεστάνης!", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/194333-nea-thesi-ergasias-gia-ypallilo-boufe-sta-sea-nestanis.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 5, "title": "Η επιχείρηση \"ΑΤΛΑΣ ΕΜΠΟΡΙΚΗ\" αναζητά υπάλληλο τιμολόγησης και εκτέλεσης παραγγελιών", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/194598-i-epixeirisi-atlas-emporiki-anazita-ypallilo-timologisis-kai-ektelesis-paraggelion.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 4, "title": "Νέα θέση εργασίας για εξυπηρέτηση πελατών", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/194622-nea-thesi-ergasias-gia-eksypiretisi-pelaton.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 3, "title": "Επτά θέσεις εργασίας στον Δήμο και στη ΔΕΥΑ Βόρειας Κυνουρίας μέσω ΑΣΕΠ", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/194868-epta-theseis-ergasias-ston-dimo-kai-sti-deva-voreias-kynourias-meso-asep.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 2, "title": "Αγγελία εργασίας | Ζητείται διανομέας courier για πλήρη απασχόληση", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/194916-aggelia-ergasias-ziteitai-dianomeas-courier-gia-pliri-apasxolisi.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}, {"id": 1, "title": "Νέα θέση εργασίας για αποθηκάριο", "link": "https://kalimera-arkadia.gr/theseis-ergasias/item/195153-nea-thesi-ergasias-gia-apothikario.html", "source": "Καλημέρα Αρκαδία", "date": "2026-11-15 18:29:22"}]})">
     <div class="max-w-4xl mx-auto">
-        <header class="mb-8 text-center">
-            <h1 class="text-3xl font-extrabold text-slate-800">💼 Αγγελίες Εργασίας & Προκηρύξεις</h1>
-            <p class="text-slate-500 mt-2">Αυστηρά φιλτραρισμένες θέσεις εργασίας</p>
+        
+        <!-- HEADER -->
+        <header class="mb-6 flex flex-col md:flex-row justify-between items-center bg-slate-800 p-5 rounded-2xl shadow-xl border border-slate-700 gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-white flex items-center gap-2">
+                    <span>💼</span> Job Radar Αρκαδίας
+                </h1>
+                <p class="text-slate-400 text-xs mt-1">Αυτόματη παρακολούθηση & φιλτράρισμα θέσεων εργασίας</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-xl font-medium">
+                    Ενεργές: <strong x-text="jobs.length"></strong>
+                </span>
+            </div>
         </header>
 
-        <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-slate-100">
-            <div class="p-4 bg-slate-100 border-b border-slate-200 font-semibold text-slate-700 flex justify-between items-center">
-                <span>Ενεργές Αγγελίες</span>
-                <span class="bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full">19</span>
+        <!-- CONTROL PANEL (SEARCH & TABS) -->
+        <div class="bg-slate-800 p-4 rounded-2xl shadow-xl mb-6 border border-slate-700 space-y-3">
+            <div class="relative">
+                <input type="text" x-model="search" placeholder="🔍 Αναζήτηση (π.χ. Πληροφορική, ΣΟΧ, Δήμος, Τρίπολη)..." 
+                    class="w-full bg-slate-900 text-slate-100 px-4 py-3 pl-11 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder-slate-500">
+                <span class="absolute left-4 top-3.5 text-slate-500">⚡</span>
             </div>
-            <div class="divide-y divide-slate-100">
 
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Περιφέρεια Πελοποννήσου</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:23</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">ΑΝΑΚΟΙΝΩΣΗ υπ’ αριθ. ΣΜΕ 12/2026 για τη σύναψη ΣΥΜΒΑΣΗΣ ΜΙΣΘΩΣΗΣ ΕΡΓΟΥ</h2>
-                    </div>
-                    <a href="https://www.ppel.gov.gr/anakinosi-ip-arith-sme-12-2026-gia-ti-sinapsi-simvasis-misthosis-ergou/" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Περιφέρεια Πελοποννήσου</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:23</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">ΣΜΕ 8_2026 Προσωρινός Πίνακας κατάταξης και πίνακας απορριπτέων “POLLINATE- Βελτίωση των εδαφικών πολιτικών για την αντιμετώπιση της μείωσης των επικονιαστών/ Improving territorial policies to address the decline of pollinators”, του προγράμματος Interreg</h2>
-                    </div>
-                    <a href="https://www.ppel.gov.gr/sme-8_2026-prosorinos-pinakas-katataxis-ke-pinakas-aporripteon-pollinate-veltiosi-ton-edafikon-politikon-gia-tin-antimetopisi-tis-miosis-ton-epikoniaston-improving-territorial-policies-to-address/" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Περιφέρεια Πελοποννήσου</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:23</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">ΣΜΕ 9_2026 Προσωρινός Πίνακας κατάταξης και Πίνακας απορριπτέων EUM POWER- Προώθηση της ισότητας των δικαιωμάτων μεταξύ των Εσωτερικών μεταναστών εντός Ε.Ε./ EU Migrants Promoting Openness With Equal Rights</h2>
-                    </div>
-                    <a href="https://www.ppel.gov.gr/sme-9_2026-prosorinos-pinakas-katataxis-ke-pinakas-aporripteon-eum-power-proothisi-tis-isotitas-ton-dikeomaton-metaxi-ton-esoterikon-metanaston-entos-e-e-eu-migrants-promoting-openness-with-equal-r/" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Περιφέρεια Πελοποννήσου</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:23</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Προκήρυξη Εξετάσεων για την απόκτηση Πτυχίου Ραδιοερασιτέχνη Β΄ Περιόδου 2026, στην περιοχή ευθύνης της Περιφερειακής Ενότητας Κορινθίας</h2>
-                    </div>
-                    <a href="https://www.ppel.gov.gr/prokirixi-exetaseon-gia-tin-apoktisi-ptichiou-radioerasitechni-v%ce%84-periodou-2026-stin-periochi-efthinis-tis-periferiakis-enotitas-korinthias/" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Περιφέρεια Πελοποννήσου</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:23</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Η Δ/νση Τεχνικών Έργων της Π.Ε. Μεσσηνίας προκηρύσσει ανοιχτό διαγωνισμό για την ανάθεση της σύμβασης έργου: «ΣΥΝΤΗΡΗΣΗ 7ης ΕΠ. ΟΔΟΥ, ΤΜΗΜΑ ΣΚΑΛΑ -ΜΕΛΙΓΑΛΑΣ» με προϋπολογισμό 1.200.000,00 ΕΥΡΩ (με ΦΠΑ)</h2>
-                    </div>
-                    <a href="https://www.ppel.gov.gr/i-d-nsi-technikon-ergon-tis-p-e-messinias-prokirissi-anichto-diagonismo-gia-tin-anathesi-tis-simvasis-ergou-sintirisi-7is-ep-odou-tmima-skala-meligalas-me-proipologismo-1-200-00000-e/" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Περιφέρεια Πελοποννήσου</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:23</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">ΠΡΟΚΗΡΥΞΗ ΑΝΟΙΚΤΗΣ ΔΙΑΔΙΚΑΣΙΑΣ ΜΕΣΩ ΤΟΥ ΕΘΝΙΚΟΥ ΣΥΣΤΗΜΑΤΟΣ ΗΛΕΚΤΡΟΝΙΚΩΝ ΔΗΜΟΣΙΩΝ ΣΥΜΒΑΣΕΩΝ (Ε.Σ.Η.ΔΗ.Σ.) ΓΙΑ ΤΗΝ ΚΑΤΑΣΚΕΥΗ ΤΟΥ ΕΡΓΟΥ «ΣΥΝΤΗΡΗΣΗ, ΚΑΘΑΡΙΣΜΟΣ ΚΑΙ ΑΠΟΚΑΤΑΣΤΑΣΗ ΤΕΧΝΙΚΩΝ ΕΡΓΩΝ ΠΟΤΑΜΟΥ ΕΥΡΩΤΑ ΚΑΙ ΠΑΡΑΚΕΙΜΕΝΩΝ ΧΕΙΜΑΡΡΩΝ ΣΤΗΝ Π.Ε. ΛΑΚΩΝΙΑΣ»</h2>
-                    </div>
-                    <a href="https://www.ppel.gov.gr/prokirixi-aniktis-diadikasias-meso-tou-ethnikou-sistimatos-ilektronikon-dimosion-simvaseon-e-s-i-di-s-gia-tin-kataskevi-tou-ergou-sintirisi-katharismos-ke-apokatastasi-technikon-ergon-potamo/" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Περιφέρεια Πελοποννήσου</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:23</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Ανοικτή διαδικασία ηλεκτρονικής επιλογής αναδόχου κατασκευής του έργου: «ΑΠΟΚΑΤΑΣΤΑΣΗ ΖΗΜΙΩΝ ΚΑΙ ΑΝΤΙΠΛΗΜΜΥΡΙΚΗ ΘΩΡΑΚΙΣΗ ΡΕΜΑΤΩΝ ΚΑΙ ΤΕΧΝΙΚΩΝ ΕΡΓΩΝ ΤΟΥ ΔΗΜΟΥ ΤΡΙΦΥΛΙΑΣ ΑΠΟ ΤΗ ΘΕΟΜΗΝΙΑ ΤΗΣ 22.10.2025»</h2>
-                    </div>
-                    <a href="https://www.ppel.gov.gr/anikti-diadikasia-ilektronikis-epilogis-anadochou-kataskevis-tou-ergou-apokatastasi-zimion-ke-antiplimmiriki-thorakisi-rematon-ke-technikon-ergon-tou-dimou-trifilias-apo-ti-theominia-tis-22-10/" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Περιφέρεια Πελοποννήσου</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:23</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">ΔΙΑΚΗΡΥΞΗ ΗΛΕΚΤΡΟΝΙΚΟΥ, ΔΙΕΘΝΟΥΣ, ΑΝΟΙΧΤΟΥ, ΔΙΑΓΩΝΙΣΜΟΥ ΥΠΟΕΡΓΟ 1 «Ολοκληρωμένο Πρόγραμμα Καταπολέμησης Κουνουπιών στη Περιφέρεια Πελοποννήσου, για τα έτη 2027-2028»</h2>
-                    </div>
-                    <a href="https://www.ppel.gov.gr/diakirixi-ilektronikou-diethnous-anichtou-diagonismou-ipoergo-1-olokliromeno-programma-katapolemisis-kounoupion-sti-periferia-peloponnisou-gia-ta-eti-2027-2028/" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Μία πρόσληψη νοσηλευτή από τον Δήμο Τρίπολης για τη Στέγη Υποστηριζόμενης Διαβίωσης</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/192800-mia-proslipsi-nosilefti-apo-ton-dimo-tripolis-gia-ti-stegi-ypostirizomenis-diaviosis.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">1.000 προσλήψεις ΕΠΟΠ στις Ένοπλες Δυνάμεις</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/192845-1-000-proslipseis-epop-stis-enoples-dynameis.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Δήμος Γορτυνίας - Σχολικές καθαρίστριες | Ο οριστικός πίνακας κατάταξης</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/193042-dimos-gortynias-sxolikes-katharistries-o-oristikos-pinakas-katataksis.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Δήμος Τρίπολης | Πίνακας κατάταξης και βαθμολογίας για την προκήρυξη ΣΟΧ 1/2026</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/193427-dimos-tripolis-pinakas-katataksis-kai-vathmologias-gia-tin-prokiryksi-sox-1-2026.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Δήμος Βόρειας Κυνουρίας | Πρόσληψη 5 ατόμων για παιδικούς σταθμούς και ΚΔΑΠ ΑμεΑ</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/193704-dimos-voreias-kynourias-proslipsi-5-atomon-gia-paidikoys-stathmoys-kai-kdap-amea.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Νέα θέση εργασίας για υπαλλήλο μπουφέ στα ΣΕΑ Νεστάνης!</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/194333-nea-thesi-ergasias-gia-ypallilo-boufe-sta-sea-nestanis.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Η επιχείρηση "ΑΤΛΑΣ ΕΜΠΟΡΙΚΗ" αναζητά υπάλληλο τιμολόγησης και εκτέλεσης παραγγελιών</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/194598-i-epixeirisi-atlas-emporiki-anazita-ypallilo-timologisis-kai-ektelesis-paraggelion.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Νέα θέση εργασίας για εξυπηρέτηση πελατών</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/194622-nea-thesi-ergasias-gia-eksypiretisi-pelaton.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Επτά θέσεις εργασίας στον Δήμο και στη ΔΕΥΑ Βόρειας Κυνουρίας μέσω ΑΣΕΠ</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/194868-epta-theseis-ergasias-ston-dimo-kai-sti-deva-voreias-kynourias-meso-asep.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Αγγελία εργασίας | Ζητείται διανομέας courier για πλήρη απασχόληση</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/194916-aggelia-ergasias-ziteitai-dianomeas-courier-gia-pliri-apasxolisi.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
-                <div class="p-6 hover:bg-slate-50 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">Καλημέρα Αρκαδία</span>
-                            <span class="text-xs text-slate-400">Καταγράφηκε: 2026-11-15 18:29:22</span>
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-800">Νέα θέση εργασίας για αποθηκάριο</h2>
-                    </div>
-                    <a href="https://kalimera-arkadia.gr/theseis-ergasias/item/195153-nea-thesi-ergasias-gia-apothikario.html" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-
+            <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-700/60">
+                <button @click="currentTab = 'all'" :class="currentTab === 'all' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-700'" class="px-3.5 py-2 rounded-xl text-xs font-bold transition">
+                    Όλες (<span x-text="jobs.length"></span>)
+                </button>
+                <button @click="currentTab = 'saved'" :class="currentTab === 'saved' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-700'" class="px-3.5 py-2 rounded-xl text-xs font-bold transition">
+                    ⭐ Αγαπημένες (<span x-text="savedIds.length"></span>)
+                </button>
+                <button @click="currentTab = 'ppel'" :class="currentTab === 'ppel' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-700'" class="px-3.5 py-2 rounded-xl text-xs font-bold transition">
+                    Περιφέρεια
+                </button>
+                <button @click="currentTab = 'kalimera'" :class="currentTab === 'kalimera' ? 'bg-sky-600 text-white shadow-lg shadow-sky-500/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-700'" class="px-3.5 py-2 rounded-xl text-xs font-bold transition">
+                    Καλημέρα Αρκαδία
+                </button>
             </div>
         </div>
+
+        <!-- LISTING CONTAINER -->
+        <div class="space-y-3" x-show="filteredJobs.length > 0">
+            <template x-for="job in filteredJobs" :key="job.id">
+                <div class="bg-slate-800 p-5 rounded-2xl shadow-md border border-slate-700/80 hover:border-slate-600 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md" 
+                                :class="job.source.includes('Περιφέρεια') ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-sky-950 text-sky-400 border border-sky-800'" 
+                                x-text="job.source"></span>
+                            <span class="text-xs text-slate-400" x-text="'📅 ' + job.date"></span>
+                        </div>
+                        <h2 class="text-sm md:text-base font-semibold text-slate-100 leading-snug" x-text="job.title"></h2>
+                    </div>
+                    <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+                        <button @click="toggleSave(job.id)" class="p-2.5 rounded-xl border transition text-sm"
+                            :class="savedIds.includes(job.id) ? 'bg-amber-500/20 border-amber-500 text-amber-400' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-amber-400'"
+                            title="Αποθήκευση στα αγαπημένα">
+                            <span x-text="savedIds.includes(job.id) ? '⭐' : '☆'"></span>
+                        </button>
+                        <a :href="job.link" target="_blank" @click="markAsRead(job.id)" 
+                            class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-blue-600/20 whitespace-nowrap flex items-center gap-1.5">
+                            <span>Άνοιγμα</span>
+                            <span>→</span>
+                        </a>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="bg-slate-800 p-12 rounded-2xl shadow-xl text-center border border-slate-700 text-slate-400" x-show="filteredJobs.length === 0">
+            <p class="text-lg">Δεν βρέθηκαν αγγελίες με βάση τα κριτήρια αναζήτησης.</p>
+        </div>
+
     </div>
+
+    <script>
+        function jobApp(data) {
+            return {
+                jobs: data.jobs,
+                search: '',
+                currentTab: 'all',
+                savedIds: JSON.parse(localStorage.getItem('saved_job_ids') || '[]'),
+                readIds: JSON.parse(localStorage.getItem('read_job_ids') || '[]'),
+
+                toggleSave(id) {
+                    if (this.savedIds.includes(id)) {
+                        this.savedIds = this.savedIds.filter(i => i !== id);
+                    } else {
+                        this.savedIds.push(id);
+                    }
+                    localStorage.setItem('saved_job_ids', JSON.stringify(this.savedIds));
+                },
+
+                markAsRead(id) {
+                    if (!this.readIds.includes(id)) {
+                        this.readIds.push(id);
+                        localStorage.setItem('read_job_ids', JSON.stringify(this.readIds));
+                    }
+                },
+
+                get filteredJobs() {
+                    return this.jobs.filter(job => {
+                        let matchesSearch = job.title.toLowerCase().includes(this.search.toLowerCase());
+                        
+                        let matchesTab = true;
+                        if (this.currentTab === 'saved') {
+                            matchesTab = this.savedIds.includes(job.id);
+                        } else if (this.currentTab === 'ppel') {
+                            matchesTab = job.source.includes('Περιφέρεια');
+                        } else if (this.currentTab === 'kalimera') {
+                            matchesTab = job.source.includes('Καλημέρα');
+                        }
+
+                        return matchesSearch && matchesTab;
+                    });
+                }
+            }
+        }
+    </script>
 </body>
 </html>
