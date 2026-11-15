@@ -18,13 +18,20 @@ TARGETS = [
     }
 ]
 
-# Απαραίτητες λέξεις-κλειδιά: Ο τίτλος ΠΡΕΠΕΙ να περιέχει έστω και μία από αυτές για να θεωρηθεί αγγελία/προκήρυξη
+# Λέξεις που ΔΕΝ ΘΕΛΟΥΜΕ να υπάρχουν με τίποτα (για να κόβουμε ειδήσεις, ατυχήματα, αγγελίες ακινήτων κλπ.)
+BLACKLIST = [
+    "τροχαίο", "τροχαιο", "νεκρός", "νεκρος", "πωλείται", "πωλειται", 
+    "ενοικιάζεται", "ενοικιαζεται", "διαμέρισμα", "διαμερισμα", "οικία", 
+    "εκκλησία", "εορτή", "εορτη", "συλλυπητήρια", "συνάντηση", "ομάδα διάσωσης"
+]
+
+# Λέξεις που δείχνουν ότι είναι πράγματι θέση εργασίας / προκήρυξη
 JOB_KEYWORDS = [
-    "εργασια", "εργασία", "θεσεισ", "θέσεις", "θεση", "θέση", 
-    "προσληψη", "πρόσληψη", "προσληψεις", "προσλήψεις", 
-    "προκηρυξη", "προκήρυξη", "προκηρυξεις", "προκηρύξεις", 
-    "διαγωνισμ", "συμβασ", "σοχ", "ασεπ", "προσωπικ", 
-    "υπαλληλ", "εργο", "έργο", "μιθωσ", "μίσθωσ"
+    "εργασία", "εργασια", "θέση", "θεσεισ", "θέσεις", "θεση", 
+    "πρόσληψη", "προσληψη", "προσλήψεις", "προσληψεις", 
+    "προκήρυξη", "προκηρυξη", "προκηρύξεις", "προκηρυξεις", 
+    "διαγωνισμ", "συμβασ", "σοχ", "ασεπ", "υπάλληλ", "υπαλληλ", 
+    "προσωπικό", "προσωπικο", "έργο", "εργο", "μίσθωση", "μιθωσ"
 ]
 
 def init_db():
@@ -78,15 +85,18 @@ def scrape_jobs():
                     else:
                         continue
                     
-                    # Έλεγχος: Ο τίτλος πρέπει να έχει τουλάχιστον 10 γράμματα
                     if len(title) > 10:
-                        # Μετατροπή σε πεζά για σωστό έλεγχο λέξεων-κλειδιών
                         title_lower = title.lower()
                         
-                        # Αν είναι από την Περιφέρεια (σελίδα προκηρύξεων) ή αν περιέχει λέξη-κλειδί εργασίας
-                        is_relevant = any(kw in title_lower for kw in JOB_KEYWORDS) or "ppel.gov.gr" in link
+                        # 1. Έλεγχος Blacklist: Αν περιέχει άσχετη λέξη, το απορρίπτουμε αμέσως
+                        has_blacklisted_word = any(bad in title_lower for bad in BLACKLIST)
+                        if has_blacklisted_word:
+                            continue
                         
-                        if is_relevant:
+                        # 2. Έλεγχος: Είτε είναι από Περιφέρεια (προκηρύξεις) είτε περιέχει λέξη εργασίας
+                        is_job = any(kw in title_lower for kw in JOB_KEYWORDS) or "ppel.gov.gr" in link
+                        
+                        if is_job:
                             try:
                                 cursor.execute(
                                     "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
@@ -100,7 +110,7 @@ def scrape_jobs():
             print(f"Σφάλμα: {e}")
 
     conn.close()
-    print(f"Προστέθηκαν {total_added} σχετικές αγγελίες.")
+    print(f"Προστέθηκαν {total_added} καθαρές αγγελίες.")
 
 def generate_html():
     conn = sqlite3.connect(DB_NAME)
@@ -121,12 +131,12 @@ def generate_html():
     <div class="max-w-4xl mx-auto">
         <header class="mb-8 text-center">
             <h1 class="text-3xl font-extrabold text-slate-800">💼 Αγγελίες Εργασίας & Προκηρύξεις</h1>
-            <p class="text-slate-500 mt-2">Φιλτραρισμένες αγγελίες για την περιοχή μας</p>
+            <p class="text-slate-500 mt-2">Αυστηρά φιλτραρισμένες θέσεις εργασίας</p>
         </header>
 
         <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-slate-100">
             <div class="p-4 bg-slate-100 border-b border-slate-200 font-semibold text-slate-700 flex justify-between items-center">
-                <span>Συνολικά φιλτραρισμένες αγγελίες</span>
+                <span>Ενεργές Αγγελίες</span>
                 <span class="bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full">{len(rows)}</span>
             </div>
             <div class="divide-y divide-slate-100">
@@ -150,24 +160,4 @@ def generate_html():
                         </div>
                         <h2 class="text-lg font-semibold text-slate-800">{title}</h2>
                     </div>
-                    <a href="{link}" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-                        Άνοιγμα Αγγελίας →
-                    </a>
-                </div>
-"""
-
-    html_content += """
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-"""
-
-    with open(HTML_FILE, "w", encoding="utf-8") as f:
-        f.write(html_content)
-    print("Το index.html δημιουργήθηκε επιτυχώς!")
-
-if __name__ == "__main__":
-    scrape_jobs()
-    generate_html()
+                    <a href="{link}" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg
