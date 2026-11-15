@@ -19,14 +19,12 @@ TARGETS = [
     }
 ]
 
-# Απαγορευμένες λέξεις (κόβει ατυχήματα, ειδήσεις, αγγελίες ακινήτων κλπ.)
 BLACKLIST = [
     "τροχαίο", "τροχαιο", "νεκρός", "νεκρος", "πωλείται", "πωλειται", 
     "ενοικιάζεται", "ενοικιαζεται", "διαμέρισμα", "διαμερισμα", "οικία", 
     "εκκλησία", "εορτή", "εορτη", "συλλυπητήρια", "συνάντηση"
 ]
 
-# ΥΠΟΧΡΕΩΤΙΚΕΣ λέξεις: Πρέπει ΟΠΩΣΔΗΠΟΤΕ ο τίτλος να περιέχει έστω και μία από αυτές
 MANDATORY_KEYWORDS = [
     "εργασία", "εργασια", "θέση", "θεσεισ", "θέσεις", "θεση", 
     "πρόσληψη", "προσληψη", "προσλήψεις", "προσληψεις", 
@@ -58,7 +56,8 @@ def scrape_jobs():
     total_added = 0
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept-Language": "el-GR,el;q=0.9,en;q=0.8"
     }
 
     for target in TARGETS:
@@ -67,19 +66,21 @@ def scrape_jobs():
         domain = target["domain"]
 
         try:
-            response = requests.get(target_url, headers=headers, timeout=10)
+            response = requests.get(target_url, headers=headers, timeout=15)
             if response.status_code != 200:
+                print(f"Σφάλμα σύνδεσης στο {target_url}: {response.status_code}")
                 continue
             
             soup = BeautifulSoup(response.text, "html.parser")
-            items = soup.find_all(['h2', 'h3'])
             
-            for item in items:
-                a_tag = item.find('a')
-                if a_tag and a_tag.get('href'):
-                    title = a_tag.get_text(strip=True)
-                    href = a_tag['href']
-                    
+            # Σαρώνουμε ΟΛΟΥΣ τους συνδέσμους της σελίδας για να μη χάνουμε τίποτα
+            links = soup.find_all('a')
+            
+            for a_tag in links:
+                href = a_tag.get('href')
+                title = a_tag.get_text(strip=True)
+                
+                if href and title and len(title) > 10:
                     if href.startswith('/'):
                         link = f"https://{domain}" + href
                     elif href.startswith('http'):
@@ -87,31 +88,32 @@ def scrape_jobs():
                     else:
                         continue
                     
-                    if len(title) > 10:
+                    # Έλεγχος ότι ανήκει στο σωστό domain και δεν είναι η αρχική σελίδα
+                    if domain in link and link != target_url:
                         title_lower = title.lower()
                         
                         # 1. Έλεγχος Blacklist
                         if any(bad in title_lower for bad in BLACKLIST):
                             continue
                         
-                        # 2. Έλεγχος Mandatory Keywords (υποχρεωτικά)
-                        if not any(kw in title_lower for kw in MANDATORY_KEYWORDS):
-                            continue
+                        # 2. Έλεγχος Mandatory Keywords (αν είναι από Περιφέρεια στα Category/Diakyrixeis, είμαστε πιο ελαστικοί ή ελέγχουμε λέξεις)
+                        is_job = any(kw in title_lower for kw in MANDATORY_KEYWORDS) or "diakyrixeis" in target_url
                         
-                        try:
-                            cursor.execute(
-                                "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
-                                (title, link, source_name)
-                            )
-                            conn.commit()
-                            total_added += 1
-                        except sqlite3.IntegrityError:
-                            pass
+                        if is_job:
+                            try:
+                                cursor.execute(
+                                    "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
+                                    (title, link, source_name)
+                                )
+                                conn.commit()
+                                total_added += 1
+                            except sqlite3.IntegrityError:
+                                pass
         except Exception as e:
-            print(f"Σφάλμα: {e}")
+            print(f"Σφάλμα στο {target_url}: {e}")
 
     conn.close()
-    print(f"Προστέθηκαν {total_added} καθαρές αγγελίες.")
+    print(f"Προστέθηκαν συνολικά {total_added} αγγελίες.")
 
 def generate_html():
     conn = sqlite3.connect(DB_NAME)
@@ -226,52 +228,4 @@ def generate_html():
                 jobs: data.jobs,
                 search: '',
                 currentTab: 'all',
-                savedIds: JSON.parse(localStorage.getItem('saved_job_ids') || '[]'),
-                readIds: JSON.parse(localStorage.getItem('read_job_ids') || '[]'),
-
-                toggleSave(id) {{
-                    if (this.savedIds.includes(id)) {{
-                        this.savedIds = this.savedIds.filter(i => i !== id);
-                    }} else {{
-                        this.savedIds.push(id);
-                    }}
-                    localStorage.setItem('saved_job_ids', JSON.stringify(this.savedIds));
-                }},
-
-                markAsRead(id) {{
-                    if (!this.readIds.includes(id)) {{
-                        this.readIds.push(id);
-                        localStorage.setItem('read_job_ids', JSON.stringify(this.readIds));
-                    }}
-                }},
-
-                get filteredJobs() {{
-                    return this.jobs.filter(job => {{
-                        let matchesSearch = job.title.toLowerCase().includes(this.search.toLowerCase());
-                        
-                        let matchesTab = true;
-                        if (this.currentTab === 'saved') {{
-                            matchesTab = this.savedIds.includes(job.id);
-                        }} else if (this.currentTab === 'ppel') {{
-                            matchesTab = job.source.includes('Περιφέρεια');
-                        }} else if (this.currentTab === 'kalimera') {{
-                            matchesTab = job.source.includes('Καλημέρα');
-                        }}
-
-                        return matchesSearch && matchesTab;
-                    }});
-                }}
-            }}
-        }}
-    </script>
-</body>
-</html>
-"""
-
-    with open(HTML_FILE, "w", encoding="utf-8") as f:
-        f.write(html_content)
-    print("Το index.html δημιουργήθηκε επιτυχώς!")
-
-if __name__ == "__main__":
-    scrape_jobs()
-    generate_html()
+                savedIds: JSON.parse(localStorage.getItem('saved_
