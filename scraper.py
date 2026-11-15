@@ -18,20 +18,21 @@ TARGETS = [
     }
 ]
 
-# Λέξεις που ΔΕΝ ΘΕΛΟΥΜΕ να υπάρχουν με τίποτα (για να κόβουμε ειδήσεις, ατυχήματα, αγγελίες ακινήτων κλπ.)
+# Απαγορευμένες λέξεις (κόβει ατυχήματα, ειδήσεις, αγγελίες ακινήτων κλπ.)
 BLACKLIST = [
     "τροχαίο", "τροχαιο", "νεκρός", "νεκρος", "πωλείται", "πωλειται", 
     "ενοικιάζεται", "ενοικιαζεται", "διαμέρισμα", "διαμερισμα", "οικία", 
-    "εκκλησία", "εορτή", "εορτη", "συλλυπητήρια", "συνάντηση", "ομάδα διάσωσης"
+    "εκκλησία", "εορτή", "εορτη", "συλλυπητήρια", "συνάντηση"
 ]
 
-# Λέξεις που δείχνουν ότι είναι πράγματι θέση εργασίας / προκήρυξη
-JOB_KEYWORDS = [
+# ΥΠΟΧΡΕΩΤΙΚΕΣ λέξεις: Πρέπει ΟΠΩΣΔΗΠΟΤΕ ο τίτλος να περιέχει έστω και μία από αυτές
+MANDATORY_KEYWORDS = [
     "εργασία", "εργασια", "θέση", "θεσεισ", "θέσεις", "θεση", 
     "πρόσληψη", "προσληψη", "προσλήψεις", "προσληψεις", 
     "προκήρυξη", "προκηρυξη", "προκηρύξεις", "προκηρυξεις", 
     "διαγωνισμ", "συμβασ", "σοχ", "ασεπ", "υπάλληλ", "υπαλληλ", 
-    "προσωπικό", "προσωπικο", "έργο", "εργο", "μίσθωση", "μιθωσ"
+    "προσωπικό", "προσωπικο", "έργο", "εργο", "μίσθωση", "μιθωσ",
+    "κατάταξη", "καταταξη", "εποπ"
 ]
 
 def init_db():
@@ -88,24 +89,24 @@ def scrape_jobs():
                     if len(title) > 10:
                         title_lower = title.lower()
                         
-                        # 1. Έλεγχος Blacklist: Αν περιέχει άσχετη λέξη, το απορρίπτουμε αμέσως
-                        has_blacklisted_word = any(bad in title_lower for bad in BLACKLIST)
-                        if has_blacklisted_word:
+                        # 1. Αν περιέχει λέξη από τη blacklist, απορρίπτεται αμέσως
+                        if any(bad in title_lower for bad in BLACKLIST):
                             continue
                         
-                        # 2. Έλεγχος: Είτε είναι από Περιφέρεια (προκηρύξεις) είτε περιέχει λέξη εργασίας
-                        is_job = any(kw in title_lower for kw in JOB_KEYWORDS) or "ppel.gov.gr" in link
+                        # 2. ΑΥΣΤΗΡΟ ΦΙΛΤΡΟ: Πρέπει υποχρεωτικά να περιέχει λέξη σχετική με δουλειά/προκήρυξη
+                        if not any(kw in title_lower for kw in MANDATORY_KEYWORDS):
+                            continue
                         
-                        if is_job:
-                            try:
-                                cursor.execute(
-                                    "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
-                                    (title, link, source_name)
-                                )
-                                conn.commit()
-                                total_added += 1
-                            except sqlite3.IntegrityError:
-                                pass
+                        # Αν πέρασε τους ελέγχους, αποθηκεύεται
+                        try:
+                            cursor.execute(
+                                "INSERT INTO jobs (title, link, source) VALUES (?, ?, ?)", 
+                                (title, link, source_name)
+                            )
+                            conn.commit()
+                            total_added += 1
+                        except sqlite3.IntegrityError:
+                            pass
         except Exception as e:
             print(f"Σφάλμα: {e}")
 
@@ -160,4 +161,24 @@ def generate_html():
                         </div>
                         <h2 class="text-lg font-semibold text-slate-800">{title}</h2>
                     </div>
-                    <a href="{link}" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg
+                    <a href="{link}" target="_blank" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
+                        Άνοιγμα Αγγελίας →
+                    </a>
+                </div>
+"""
+
+    html_content += """
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+    with open(HTML_FILE, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    print("Το index.html δημιουργήθηκε επιτυχώς!")
+
+if __name__ == "__main__":
+    scrape_jobs()
+    generate_html()
